@@ -12,9 +12,9 @@
 
 那么究竟什么是服务器端渲染？
 
->  Vue.js 是构建客户端应用程序的框架。默认情况下，可以在浏览器中输出 Vue 组件，进行生成 DOM 和操作 DOM。然而，也可以将同一个组件渲染为服务器端的 HTML 字符串，将它们直接发送到浏览器，最后将这些静态标记"激活"为客户端上完全可交互的应用程序。
+> Vue.js 是构建客户端应用程序的框架。默认情况下，可以在浏览器中输出 Vue 组件，进行生成 DOM 和操作 DOM。然而，也可以将同一个组件渲染为服务器端的 HTML 字符串，将它们直接发送到浏览器，最后将这些静态标记"激活"为客户端上完全可交互的应用程序。
 
->  服务器渲染的 Vue.js 应用程序也可以被认为是"同构"或"通用"，因为应用程序的大部分代码都可以在**服务器**和**客户端**上运行。
+> 服务器渲染的 Vue.js 应用程序也可以被认为是"同构"或"通用"，因为应用程序的大部分代码都可以在**服务器**和**客户端**上运行。
 
 如果你问我为什么使用ssr呢？([具体可参考官网](<https://ssr.vuejs.org/zh/#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%AB%AF%E6%B8%B2%E6%9F%93-ssr-%EF%BC%9F>))
 
@@ -35,7 +35,7 @@ ssr主要依靠两个包`vue-server-renderer`和 `vue`(两个版本必须匹配)
 
 #### 入门配置
 
-##### ssr雏形
+##### ssr最简易配置
 
 ```javascript
 // server.js
@@ -74,7 +74,7 @@ server.listen(8080)
 
 这时候你可以看到，无论你输入什么路径，页面文本都会显示出你的路径![image-20190409014053501](/Users/zhouatie/Library/Application Support/typora-user-images/image-20190409014053501.png)
 
-##### ssr初长成(使用模板)
+##### ssr使用模板
 
 当你在渲染 Vue 应用程序时，renderer 只从应用程序生成 HTML 标记 (markup)。在这个示例中，我们必须用一个额外的 HTML 页面包裹容器，来包裹生成的 HTML 标记。纯客户端渲染的时候，会有一个模板，会插入你打包后的一些文件等。那么ssr会不会也有这种模板呢？当然会有。
 
@@ -157,7 +157,34 @@ server.listen(8080)
 
   
 
-  
+
+
+##### 编写通用代码
+
+我们以往的纯浏览器渲染都是把js下载到本地执行的。上述代码你会发现都是用的同一个Vue构造函数，但是想对该构造函数做特殊处理时，就会对其他用户造成污染。因此，我们不应该直接创建一个应用程序实例，而是应该暴露一个可以重复执行的工厂函数，为每个请求创建新的应用程序实例：
+
+```javascript
+// 修改原先代码如下
+-const Vue = require('vue');
++const createApp = require('./app.js')
+
+-    const app = new Vue({
+-        template: `<div>${context.url}</div>`
+-    })
++    const { app } = createApp(context)
+
+// 新增app.js
+const Vue = require('vue');
+
+module.exports = function createApp(context) {
+    const app = new Vue({
+        template: `<div>${context.url}</div>`
+    })
+    return { app }
+}
+```
+
+这样，每次访问该服务器的时候，都会生成一个新的vue实例。同样的规则也适用于 router、store 和 event bus 实例。你不应该直接从模块导出并将其导入到应用程序中，而是需要在 `createApp` 中创建一个新的实例，并从根 Vue 实例注入。
 
 
 
@@ -169,4 +196,4 @@ server.listen(8080)
 
 [vue 服务端渲染ssr](<https://www.jianshu.com/p/a7631293d7f1>)
 
-[带你五步学会Vue SSR](<https://segmentfault.com/a/1190000016637877#articleHeader0>)
+[带你五步学会Vue SSR](
