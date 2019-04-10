@@ -190,10 +190,12 @@ module.exports = function createApp(context) {
 
 
 
+
+
 ## 参考
 
 [Vue SSR 指南](<https://ssr.vuejs.org/zh/>)
 
 [vue 服务端渲染ssr](<https://www.jianshu.com/p/a7631293d7f1>)
 
-[带你五步学会Vue SSR](
+[带你五步学会Vue SSR](https://segmentfault.com/a/1190000016637877#articleHeader0)
